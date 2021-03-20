@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoSanitize = require('express-mongo-sanitize');
 
 const userCtrl = require('../controllers/user');
 
