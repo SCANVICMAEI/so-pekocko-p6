@@ -15,13 +15,13 @@ exports.createSauce = (req, res, next) => {
 
 
   sauce.save()
-    .then(() => res.status(201).json({message: 'Objet enregistré !'}))
+    .then(() => res.status(201).json({message: 'Sauce enregistré !'}))
     .catch(error => res.status(400).json({error}));
 };
 
 //GET
 exports.getOneSauce = (req, res, next) => {
-  Sauce.findOne({_id: req.params.id})
+  Sauce.findOne({_id: req.params.id}) // recupère 1 sauce avec l id
     .then(sauce => res.status(200).json(sauce))
     .catch(error => res.status(404).json({error: error}));
 };
@@ -33,7 +33,7 @@ exports.modifySauce = (req, res, next) => {
     Sauce.findOne({_id: req.params.id})
         .then(sauce => {
             const fileName = sauce.imageUrl.split('/images/')[1]
-            fs.unlink(`images/${fileName}`, (err => {//On supprime l'ancienne image
+            fs.unlink(`images/${fileName}`, (err => { //On supprime l'ancienne image
                 if (err) console.log(err);
                 else {
                     console.log("Image supprimée: " + fileName);
@@ -60,7 +60,7 @@ exports.deleteSauce = (req, res, next) => {
   })
   .then(sauce => {
     const filename = sauce.imageUrl.split('/images/')[1];
-    fs.unlink(`images/${filename}`, () => {
+    fs.unlink(`images/${filename}`, () => { // unlink supprime
     Sauce.deleteOne({_id: req.params.id})
     .then(() => res.status(200).json({message: 'Objet supprimé !'}))
     .catch(error => res.status(400).json({error}));
@@ -76,32 +76,28 @@ exports.voteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
   .then(sauce => {
     switch (req.body.like) {
-      case 1 : //if user likes the sauce
-        if (!sauce.usersLiked.includes(Id)) { //If the user hasn't already liked the sauce
-          /***increasing likes qtty by 1, pushing userId in usersLiked array ***/
+      case 1 : //Si Like
+        if (!sauce.usersLiked.includes(Id)) { 
           Sauce.updateOne({ _id: req.params.id }, {$inc: {likes: 1}, $push: {usersLiked: Id}, _id: req.params.id})
             .then(() => res.status(210).json({ message: 'La sauce a été likée'}))
             .catch(error => res.status(400).json({ error }));
         }
       break;
 
-      case -1 : //if user dislikes the sauce
-        if (!sauce.usersDisliked.includes(req.body.userId)) { //If the user hasn't already disliked the sauce
-          /***increasing dislikes qtty by 1, pushing userId in usersDisliked array ***/
+      case -1 : //Si dislikes 
+        if (!sauce.usersDisliked.includes(Id)) { 
           Sauce.updateOne({ _id: req.params.id }, {$inc: {dislikes: 1}, $push: {usersDisliked: Id}, _id: req.params.id})
             .then(() => res.status(210).json({ message: 'La sauce a été likée'}))
             .catch(error => res.status(400).json({ error }));
         }
       break;
 
-      case 0 : //if user either removes a like or a dislike
-        if (sauce.usersLiked.includes(Id)) { //if userId alreadu in usersLiked array
-          /***Decreasing likes by one, removing userId from usersLiked array***/
+      case 0 : //Changement choix
+        if (sauce.usersLiked.includes(Id)) { 
           Sauce.updateOne({_id: req.params.id}, {$inc: {likes: -1}, $pull: {usersLiked: Id}, _id: req.params.id})
             .then(() => res.status(201).json({ message: 'Like supprimé'}))
             .catch(error => res.status(400).json({ error }));
-        } else if (sauce.usersDisliked.includes(Id)) { //if userId already in usersDisliked array
-          /***Decreasing dislikes by one, removing userId from usersDisliked array***/
+        } else if (sauce.usersDisliked.includes(Id)) { 
           Sauce.updateOne({_id: req.params.id}, {$inc: {dislikes: -1}, $pull: {usersDisliked: Id}, _id: req.params.id})
             .then(() => res.status(201).json({ message: 'Dislike supprimé'}))
             .catch(error => res.status(400).json({ error }));	
@@ -114,8 +110,6 @@ exports.voteSauce = (req, res, next) => {
   })
   .catch(error => res.status(500).json({ error }));
 };
-
-
 
 
 //GET

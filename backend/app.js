@@ -1,36 +1,68 @@
 const express = require('express');
 
-const bodyParser = require('body-parser'); // permet d'extraire l'objet json de la demande 
+const app = express();
 
 const mongoose = require('mongoose');
 
 const path = require('path');
 
+// Importation des  routes
+
 const sauceRoutes = require('./routes/sauce'); 
+
 const userRoutes = require('./routes/user');
 
-mongoose.connect('mongodb+srv://maei:Romy@cluster0.a7nwc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+// Mise en place securité
+
+var Ddos = require('ddos')
+
+var ddos = new Ddos({burst:10, limit:15})
+
+app.use(ddos.express);
+
+require('dotenv').config(); //pour definir les variables d environnement 
+
+const helmet = require('helmet'); //definit les entetes HTTP
+
+const mongoSanitize = require('express-mongo-sanitize'); //desinfecte donnees fournies par user
+
+const rateLimit = require('express-rate-limit'); //pour limiter tentative d identifications
+
+mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}.a7nwc.mongodb.net/${process.env.DB_LINK}`,
   { useNewUrlParser: true,
     useUnifiedTopology: true,
    })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
-const app = express();
+ 
 
-app.use((req, res, next) => {//ajoute header a l'objet reponse sera appliquer a toute les routes envoyer au serveur / permet d'accder a notre api depuis n 'importe quelle origine
+app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
   });
 
-app.use(bodyParser.json());//transforme le corp du java script en objet json  
+app.use(express.urlencoded({extended: true})); //remplace bodyParser
+
+app.use(express.json());
 
 app.use('/images',express.static(path.join(__dirname,'images')));
 
 app.use('/api/sauces',sauceRoutes)
 
 app.use('/api/auth', userRoutes);
+
+app.use(helmet());
+
+const limiter = rateLimit({ // limite le nombre d identification
+  windowMs: 60 * 1000, // 1 minute
+  max: 3 //3 requetes max par minute
+});
+
+app.use(limiter);
+
+app.use(mongoSanitize());
 
 module.exports = app;
