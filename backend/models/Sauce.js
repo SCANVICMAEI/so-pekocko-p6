@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 
-
 //modèle
 const sauceSchema = mongoose.Schema({
     userId: { type: String },

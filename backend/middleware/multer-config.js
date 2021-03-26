@@ -6,7 +6,7 @@ const MIME_TYPES = {
   'image/png': 'png'
 };
 
-const controllerimages = 1 * 1024 * 1024
+const controllerimages = 1 * 1024 * 1024 ;
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {

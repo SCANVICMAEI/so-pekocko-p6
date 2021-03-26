@@ -4,8 +4,6 @@ const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken'); // token et verification 
 
-const maskData = require('maskdata');
-
 const passwordValidator = require('password-validator');
 
 
@@ -13,7 +11,7 @@ let schema = new passwordValidator();//Shema MDP : min 5 caractères max 20 cara
 schema
 .is().min(5) 
 .is().max(20) 
-.has().uppercase(2) 
+.has().uppercase() 
 .has().lowercase() 
 .has().digits(1) 
 .has().not().spaces()  
@@ -26,7 +24,7 @@ exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10)// hash mdp 
       .then(hash => {
         const user = new User({
-          email: maskData.maskEmail2(req.body.email), 
+          email:(req.body.email), 
           password: hash
         });       
         user.save()
@@ -38,7 +36,7 @@ exports.signup = (req, res, next) => {
   };
 
   exports.login = (req, res, next) => {
-    User.findOne({ email: maskData.maskEmail2(req.body.email)})
+    User.findOne({ email:(req.body.email)})
       .then(user => {
         if (!user) {
           return res.status(401).json({ error: 'Utilisateur non trouvé !' });

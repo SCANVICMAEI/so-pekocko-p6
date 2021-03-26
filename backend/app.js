@@ -14,7 +14,7 @@ const userRoutes = require('./routes/user');
 
 // Mise en place securité
 
-var Ddos = require('ddos')
+var Ddos = require('ddos') //denis service
 
 var ddos = new Ddos({burst:10, limit:15})
 
@@ -25,8 +25,6 @@ require('dotenv').config(); //pour definir les variables d environnement
 const helmet = require('helmet'); //definit les entetes HTTP
 
 const mongoSanitize = require('express-mongo-sanitize'); //desinfecte donnees fournies par user
-
-const rateLimit = require('express-rate-limit'); //pour limiter tentative d identifications
 
 mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}.a7nwc.mongodb.net/${process.env.DB_LINK}`,
   { useNewUrlParser: true,
@@ -55,13 +53,6 @@ app.use('/api/sauces',sauceRoutes)
 app.use('/api/auth', userRoutes);
 
 app.use(helmet());
-
-const limiter = rateLimit({ // limite le nombre d identification
-  windowMs: 60 * 1000, // 1 minute
-  max: 3 //3 requetes max par minute
-});
-
-app.use(limiter);
 
 app.use(mongoSanitize());
 
